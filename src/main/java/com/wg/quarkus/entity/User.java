@@ -1,24 +1,28 @@
 package com.wg.quarkus.entity;
 
-
-import io.quarkus.hibernate.reactive.panache.PanacheEntity;
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import io.vertx.mutiny.sqlclient.Row;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "t_user")
-public class User extends PanacheEntity {
+public class User extends PanacheEntityBase {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String name;
-    @Column(name="create_time")
+
+    @Column(name = "create_time")
     private LocalDateTime createTime;
+
     private String password;
+
     private String email;
+
     private String roles;
 
     public User() {
@@ -26,12 +30,12 @@ public class User extends PanacheEntity {
     }
 
     public User(Long id, String name) {
-        super.id=id;
+        this.id = id;
         this.name = name;
     }
 
     public User(Long id, String name, LocalDateTime createTime,String password,String email,String roles) {
-        super.id = id;
+        this.id = id;
         this.name = name;
         this.createTime = createTime;
         this.password = password;
@@ -48,7 +52,7 @@ public class User extends PanacheEntity {
     }
 
     public void setId(Long id) {
-        super.id = id;
+        this.id = id;
     }
 
     public String getName() {

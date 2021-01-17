@@ -1,17 +1,17 @@
 package com.wg.quarkus.resource;
 
-import com.wg.quarkus.PBKDF2Encoder;
 import com.wg.quarkus.entity.User;
 import io.quarkus.redis.client.RedisClient;
-import io.smallrye.mutiny.Multi;
+import io.quarkus.redis.client.reactive.ReactiveRedisClient;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
-import io.vertx.mutiny.sqlclient.Tuple;
+import io.vertx.mutiny.redis.client.Response;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,13 +20,10 @@ import java.util.List;
 public class GreetingResource {
 
     @Inject
-    PgPool pgclient;
-
-    @Inject
     RedisClient redisClient;
 
     @Inject
-    PBKDF2Encoder passwordEncoder;
+    ReactiveRedisClient reactiveRedisClient;
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -57,8 +54,13 @@ public class GreetingResource {
     @POST
     @Path("/save")
     @Produces(MediaType.APPLICATION_JSON)
-    public  Uni<Void> addUser(User user){
-        return User.persist(user);
+    public Uni<Void> addUser(User user) {
+        if (null != user.getPassword()) {
+            user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+        }
+        user.setCreateTime(LocalDateTime.now());
+        return user.persistAndFlush();
+        //return Response.ok().build();
    /*     return pgclient.preparedQuery("insert into t_user(name,email,password) values($1,$2,$3)")
                 .execute(Tuple.of(user.getName(), user.getEmail(), passwordEncoder.encode(user.getPassword())))
                 .onItem().transform(pgRowSet -> User.from(pgRowSet.iterator().next()));*/
@@ -71,14 +73,28 @@ public class GreetingResource {
     @Path("/helloredis")
     @Produces(MediaType.TEXT_PLAIN)
     public String helloRedis() {
+        io.vertx.redis.client.Response setnx = redisClient.setnx("hello", "hello_abcd");
+        System.out.println("setnx = " + setnx);
         String hello = redisClient.get("hello").toString();
-        if(null == hello){
+        if (null == hello) {
             System.out.println("cache is null -- ");
-            redisClient.set(Arrays.asList("hello","hello"));
+            redisClient.set(Arrays.asList("hello", "hello"));
         }
         return hello;
     }
 
+
+    @GET
+    @Path("/redis")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Uni<Response> redis() {
+        return reactiveRedisClient.get("hello");
+        /*if(null == hello){
+            System.out.println("cache is null -- ");
+            redisClient.set(Arrays.asList("hello","hello"));
+        }
+        return hello;*/
+    }
 
 
 }

@@ -37,6 +37,7 @@ public class UserResource {
     @Path("/admin")
     @Produces(MediaType.APPLICATION_JSON)
     public Response admin() {
+
         System.out.println(exp);
         Set<String> claimNames = jwt.getClaimNames();
         System.out.println("claimNames = " + claimNames);

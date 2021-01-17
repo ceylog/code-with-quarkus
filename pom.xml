@@ -66,6 +66,12 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-redis-client</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>de.svenkubiak</groupId>
+      <artifactId>jBCrypt</artifactId>
+      <version>0.4.3</version>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-reactive-panache</artifactId>
